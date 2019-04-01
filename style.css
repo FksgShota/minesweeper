@@ -1,0 +1,70 @@
+. .buttonGroup {
+  display: table;
+}
+
+.buttonGroup button {
+  display: table-cell;
+  table-layout: fixed;
+  margin: 5px;
+  padding: 5px;
+  width: 100px;
+  text-align: center;
+}
+
+.display {
+  display: table;
+}
+
+.display time {
+  display: table-cell;
+  table-layout: fixed;
+  margin: 5px;
+  padding: 10px;
+}
+.display p {
+  display: table-cell;
+  table-layout: fixed;
+  margin: 5px;
+  padding: 10px;
+}
+
+button:hover {
+  background-color: rgb(11, 244, 160);
+}
+
+button.active {
+  background-color: rgba(222, 165, 20, 0.85);
+}
+
+table {
+  padding: 0;
+  margin: 0;
+  background: #000033;
+
+  font-size: 22px;
+  cellspacing: 1;
+  cellpadding: 0;
+}
+table tr {
+  padding: 0;
+  margin: 0;
+}
+
+table td {
+  color: #000000;
+  background: rgb(0, 171, 255);
+  padding: 0;
+  margin: 0;
+  width: 27px;
+  height: 27px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.empty {
+  background-color: rgba(0, 0, 0, 0.29);
+  color: rgba(22, 240, 30, 0.61);
+}
+
+.flag {
+}
