@@ -3,25 +3,25 @@
   <head>
     <meta charset="utf-8" />
     <title>マインスイーパ</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <h1>マインスイーパ</h1>
-    <section class="gameDataStatus">
+    <section class="gameStatus">
       <form class="buttonGroup">
-        <button id="startStop" value="start">スタート</button> <button id="levelSet">初級</button>
-        <button id="flagSet">旗切り替え</button><button id="reset">リセット</button>
+        <button type="button" id="startStop" value="start">スタート</button>
+        <button type="button" id="levelChange">初級</button> <button type="button" id="flagSet">旗切り替え</button
+        ><button type="button" id="gameReset" disabled>リセット</button>
       </form>
       <div class="display">
-        <time id="timerDisplay">00:00:00:00</time>
-        <p>地雷</p>
+        <p id="timerDisplay">00:00:00</p>
+        <p>地雷:</p>
         <p id="mineCount">00</p>
-        <p>旗</p>
+        <p>旗:</p>
         <p id="flagCount">00</p>
       </div>
     </section>
     <section id="minefield"></section>
-
     <script type="text/javascript" src="spec.js"></script>
   </body>
 </html>
