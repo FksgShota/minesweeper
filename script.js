@@ -126,4 +126,58 @@ const mineSweeper = {
     levelButton.textContent = this.gameLevelConfig[this.gameLevel].name
     this.initialize()
   },
+
+  setMinesRandomly() {
+    const cellIdArray = []
+    for (let tr = 0; tr < this.gameLevelConfig[this.gameLevel].cell; tr++) {
+      for (let td = 0; td < this.gameLevelConfig[this.gameLevel].cell; td++) {
+        cellIdArray.push(`cell-${tr}-${td}`)
+      }
+    }
+    for (let i = cellIdArray.length - 1; i >= 0; i--) {
+      const g = Math.floor(Math.random() * (i + 1))
+      const tmp = cellIdArray[i]
+      cellIdArray[i] = cellIdArray[g]
+      cellIdArray[g] = tmp
+    }
+
+    for (let i = 0; i < this.gameLevelConfig[this.gameLevel].mine; i++) {
+      if (document.getElementById(`${cellIdArray[i]}`).dataset.status === `1`) {
+        cellIdArray.splice(i, 1)
+        i--
+        continue
+      }
+      document.getElementById(`${cellIdArray[i]}`).dataset.mine = `1`
+    }
+  },
+
+  countMineNumber() {
+    const tdArray = Array.from(document.getElementsByTagName(`td`))
+
+    tdArray.forEach(cell => {
+      const cellId = cell.id
+      const cellIdSplit = cellId.split(`-`)
+      const tr = Number(cellIdSplit[1])
+      const td = Number(cellIdSplit[2])
+      let valueNum = ``
+
+      if (cell.dataset.mine === `1`) {
+        return
+      }
+
+      for (let i = tr - 1; i <= tr + 1; i++) {
+        for (let j = td - 1; j <= td + 1; j++) {
+          let adjacentCell = document.getElementById(`cell-${i}-${j}`)
+          if ((i === tr && j === td) || adjacentCell === null) {
+            continue
+          }
+          let adjacentCellMine = adjacentCell.dataset.mine
+          if (adjacentCellMine === `1`) {
+            valueNum++
+          }
+        }
+      }
+      cell.dataset.value = `${valueNum}`
+    })
+  },
 }
