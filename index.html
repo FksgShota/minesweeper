@@ -9,16 +9,17 @@
     <h1>マインスイーパ</h1>
     <section class="gameStatus">
       <form class="buttonGroup">
-        <button type="button" id="startStop" value="start">スタート</button>
-        <button type="button" id="levelChange">初級</button> <button type="button" id="flagSet">旗切り替え</button
-        ><button type="button" id="gameReset" disabled>リセット</button>
+        <button type="button" id="pauseButton" value="pause" disabled>一時停止</button>
+        <button type="button" id="levelButton">初級</button>
+        <button type="button" id="flagModeButton">旗切り替え</button
+        ><button type="button" id="resetButton" disabled>リセット</button>
       </form>
       <div class="display">
-        <p id="timerDisplay">00:00:00</p>
+        <p id="timeCounter">00:00:00</p>
         <p>地雷:</p>
-        <p id="mineCount">00</p>
+        <p id="mineNumber">00</p>
         <p>旗:</p>
-        <p id="flagCount">00</p>
+        <p id="flagCounter">0</p>
       </div>
     </section>
     <section id="minefield"></section>
