@@ -71,3 +71,23 @@ const countUpTimer = {
     this.gameClearTime = this.outputFormat(this.elapsedTime)
   },
 }
+
+const mineSweeper = {
+  gameLevelConfig: [
+    { name: `初級`, cell: 9, mine: 10 },
+    { name: `中級`, cell: 16, mine: 40 },
+    { name: `上級`, cell: 30, mine: 120 },
+    { name: `マニア`, cell: 68, mine: 777 },
+  ],
+  gameLevel: 0,
+  initializingState: true,
+  flagSetMode: false,
+  flagNumber: 0,
+  mineNumber: 10,
+  highScoreRanking: [
+    { name: `初級`, Gold: `-`, Silver: `-`, Bronze: `-` },
+    { name: `中級`, Gold: `-`, Silver: `-`, Bronze: `-` },
+    { name: `上級`, Gold: `-`, Silver: `-`, Bronze: `-` },
+    { name: `マニア`, Gold: `-`, Silver: `-`, Bronze: `-` },
+  ],
+}
