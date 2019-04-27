@@ -180,4 +180,56 @@ const mineSweeper = {
       cell.dataset.value = `${valueNum}`
     })
   },
+
+  openMineCell(clickCell) {
+    clickCell.dataset.status = `1`
+    clickCell.classList.add(`mine`)
+    clickCell.textContent = '●'
+  },
 }
+
+document.addEventListener(
+  `DOMContentLoaded`,
+  () => {
+    levelButton.addEventListener(
+      `click`,
+      () => {
+        mineSweeper.setGameLevel()
+      },
+      false
+    )
+
+    pauseButton.addEventListener(
+      `click`,
+      () => {
+        switch (pauseButton.value) {
+          case `start`:
+            countUpTimer.start()
+            break
+          case `pause`:
+            countUpTimer.pause()
+            break
+        }
+        resetButton.disabled = false
+      },
+      false
+    )
+
+    flagModeButton.addEventListener(
+      `click`,
+      () => {
+        mineSweeper.toggleFlagSetMode()
+      },
+      false
+    )
+
+    resetButton.addEventListener(
+      `click`,
+      () => {
+        mineSweeper.initialize()
+      },
+      false
+    )
+  },
+  false
+)
