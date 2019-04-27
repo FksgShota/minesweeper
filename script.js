@@ -99,16 +99,17 @@ const mineSweeper = {
     }
     flagModeButton.classList.toggle(`activate`)
   },
-
   toggleFlagSet(clickCell) {
     switch (clickCell.dataset.status) {
       case `0`:
+        clickCell.classList.add(`flag`)
         clickCell.textContent = `▲`
         clickCell.dataset.status = `2`
         this.flagNumber++
         flagCounter.textContent = this.flagNumber
         break
       case `2`:
+        clickCell.classList.remove(`flag`)
         clickCell.textContent = ``
         clickCell.dataset.status = `0`
         this.flagNumber--
@@ -124,6 +125,7 @@ const mineSweeper = {
       this.gameLevel++
     }
     levelButton.textContent = this.gameLevelConfig[this.gameLevel].name
+
     this.initialize()
   },
 
@@ -181,16 +183,66 @@ const mineSweeper = {
     })
   },
 
+  createMineSwTarble() {
+    const table = document.createElement(`table`)
+    table.id = `mineSwTable`
+    for (let i = 0; i < this.gameLevelConfig[this.gameLevel].cell; i++) {
+      const tr = document.createElement(`tr`)
+      tr.id = `tr-${i}`
+      for (let j = 0; j < this.gameLevelConfig[this.gameLevel].cell; j++) {
+        const td = document.createElement(`td`)
+        td.id = `cell-${i}-${j}`
+        td.dataset.status = `0`
+        td.dataset.mine = `0`
+        td.dataset.value = ``
+        tr.appendChild(td)
+      }
+      table.appendChild(tr)
+    }
+    minefield.appendChild(table)
+  },
+
+  deleteMineSwTarble() {
+    while (minefield.firstChild) {
+      minefield.removeChild(minefield.firstChild)
+    }
+  },
+
   openMineCell(clickCell) {
     clickCell.dataset.status = `1`
     clickCell.classList.add(`mine`)
     clickCell.textContent = '●'
+  },
+
+  openEmptyCell(clickCell) {
+    clickCell.dataset.status = `1`
+    clickCell.classList.add(`empty`)
+    clickCell.textContent = document.getElementById(clickCell.id).dataset.value
+  },
+
+  openAllCells() {
+    const tdArray = Array.from(document.getElementsByTagName(`td`))
+
+    tdArray.forEach(td => {
+      if (td.dataset.status === `1`) {
+        return
+      }
+
+      if (td.dataset.mine === `1`) {
+        this.openMineCell(td)
+        return
+      }
+
+      this.openEmptyCell(td)
+    })
   },
 }
 
 document.addEventListener(
   `DOMContentLoaded`,
   () => {
+    mineSweeper.initialize()
+
     levelButton.addEventListener(
       `click`,
       () => {
