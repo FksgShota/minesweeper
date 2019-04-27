@@ -1,70 +1,65 @@
-. .buttonGroup {
+body {
+  height: 2000px;
+  width: 2000px;
+}
+
+.gameStatus {
   display: table;
 }
 
-.buttonGroup button {
+.gameStatus button {
   display: table-cell;
   table-layout: fixed;
   margin: 5px;
-  padding: 5px;
+  padding: 10px;
+  height: 40px;
   width: 100px;
   text-align: center;
 }
 
-.display {
-  display: table;
-}
-
-.display time {
+.gameStatus p {
   display: table-cell;
   table-layout: fixed;
   margin: 5px;
   padding: 10px;
-}
-.display p {
-  display: table-cell;
-  table-layout: fixed;
-  margin: 5px;
-  padding: 10px;
+  height: 10px;
+  width: 40px;
 }
 
 button:hover {
   background-color: rgb(11, 244, 160);
 }
 
-button.active {
+button.activate {
   background-color: rgba(222, 165, 20, 0.85);
 }
 
 table {
-  padding: 0;
-  margin: 0;
-  background: #000033;
-
-  font-size: 22px;
-  cellspacing: 1;
-  cellpadding: 0;
-}
-table tr {
-  padding: 0;
-  margin: 0;
+  text-align: center;
+  font-size: 15px;
+  border-collapse: collapse;
 }
 
 table td {
-  color: #000000;
-  background: rgb(0, 171, 255);
+  background: rgb(3, 255, 232);
+  border: solid 1px black;
   padding: 0;
   margin: 0;
   width: 27px;
   height: 27px;
-  text-align: center;
   vertical-align: middle;
 }
 
-.empty {
-  background-color: rgba(0, 0, 0, 0.29);
-  color: rgba(22, 240, 30, 0.61);
+td.empty {
+  background-color: rgb(174, 174, 175);
+  color: black;
 }
 
-.flag {
+td.flag {
+  color: rgb(250, 255, 0);
+}
+
+td.mine {
+  background-color: rgb(174, 174, 175);
+  color: red;
 }
