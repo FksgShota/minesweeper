@@ -90,4 +90,40 @@ const mineSweeper = {
     { name: `上級`, Gold: `-`, Silver: `-`, Bronze: `-` },
     { name: `マニア`, Gold: `-`, Silver: `-`, Bronze: `-` },
   ],
+
+  toggleFlagSetMode() {
+    if (this.flagSetMode) {
+      this.flagSetMode = false
+    } else {
+      this.flagSetMode = true
+    }
+    flagModeButton.classList.toggle(`activate`)
+  },
+
+  toggleFlagSet(clickCell) {
+    switch (clickCell.dataset.status) {
+      case `0`:
+        clickCell.textContent = `▲`
+        clickCell.dataset.status = `2`
+        this.flagNumber++
+        flagCounter.textContent = this.flagNumber
+        break
+      case `2`:
+        clickCell.textContent = ``
+        clickCell.dataset.status = `0`
+        this.flagNumber--
+        flagCounter.textContent = this.flagNumber
+        break
+    }
+  },
+
+  setGameLevel() {
+    if (this.gameLevel === this.gameLevelConfig.length - 1) {
+      this.gameLevel = 0
+    } else {
+      this.gameLevel++
+    }
+    levelButton.textContent = this.gameLevelConfig[this.gameLevel].name
+    this.initialize()
+  },
 }
