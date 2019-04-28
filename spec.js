@@ -64,6 +64,7 @@ const countUpTimer = {
     }
     return `${hh}:${mm}:${ss}`
   },
+
   setGameClearTime() {
     this.pause()
     this.gameClearTime = this.outputFormat(this.elapsedTime)
@@ -97,6 +98,7 @@ const mineSweeper = {
     }
     flagModeButton.classList.toggle(`activate`)
   },
+
   toggleFlagSet(clickCell) {
     switch (clickCell.dataset.status) {
       case `0`:
@@ -126,26 +128,22 @@ const mineSweeper = {
   },
 
   setMinesRandomly() {
-    const cellIdArray = []
-    for (let tr = 0; tr < this.gameLevelConfig[this.gameLevel].cell; tr++) {
-      for (let td = 0; td < this.gameLevelConfig[this.gameLevel].cell; td++) {
-        cellIdArray.push(`cell-${tr}-${td}`)
-      }
-    }
-    for (let i = cellIdArray.length - 1; i >= 0; i--) {
+    const cellArray = Array.from(document.getElementsByTagName(`td`))
+
+    for (let i = cellArray.length - 1; i >= 0; i--) {
       const g = Math.floor(Math.random() * (i + 1))
-      const tmp = cellIdArray[i]
-      cellIdArray[i] = cellIdArray[g]
-      cellIdArray[g] = tmp
+      const tmp = cellArray[i]
+      cellArray[i] = cellArray[g]
+      cellArray[g] = tmp
     }
 
     for (let i = 0; i < this.gameLevelConfig[this.gameLevel].mine; i++) {
-      if (document.getElementById(`${cellIdArray[i]}`).dataset.status === `1`) {
-        cellIdArray.splice(i, 1)
+      if (document.getElementById(cellArray[i].id).dataset.status === `1`) {
+        cellArray.splice(i, 1)
         i--
         continue
       }
-      document.getElementById(`${cellIdArray[i]}`).dataset.mine = `1`
+      document.getElementById(cellArray[i].id).dataset.mine = `1`
     }
   },
 
@@ -169,32 +167,32 @@ const mineSweeper = {
   },
 
   countMineNumber() {
-    const tdArray = Array.from(document.getElementsByTagName(`td`))
+    const cellArray = Array.from(document.getElementsByTagName(`td`))
 
-    tdArray.forEach(cell => {
-      const cellId = cell.id
-      const cellIdSplit = cellId.split(`-`)
-      const tr = Number(cellIdSplit[1])
-      const td = Number(cellIdSplit[2])
-      let valueNum = ``
+    cellArray.forEach(targetCell => {
+      const targetCellId = targetCell.id
+      const targetCellIdSplit = targetCellId.split(`-`)
+      const targetCellTr = Number(cellIdSplit[1])
+      const targetCellTd = Number(cellIdSplit[2])
+      let mineNum = ``
 
-      if (cell.dataset.mine === `1`) {
+      if (targetCell.dataset.mine === `1`) {
         return
       }
 
-      for (let i = tr - 1; i <= tr + 1; i++) {
-        for (let j = td - 1; j <= td + 1; j++) {
-          let adjacentCell = document.getElementById(`cell-${i}-${j}`)
-          if ((i === tr && j === td) || adjacentCell === null) {
+      for (let trNum = targetCellTr - 1; trNum <= targetCellTr + 1; trNum++) {
+        for (let tdNum = targetCellTd - 1; tdNum <= targetCellTd + 1; tdNum++) {
+          let adjacentCell = document.getElementById(`cell-${trNum}-${tdNum}`)
+          if ((trNum === targetCellTr && tdNum === targetCellTd) || adjacentCell === null) {
             continue
           }
           let adjacentCellMine = adjacentCell.dataset.mine
           if (adjacentCellMine === `1`) {
-            valueNum++
+            mineNum++
           }
         }
       }
-      cell.dataset.value = `${valueNum}`
+      targetCell.dataset.value = `${mineNum}`
     })
   },
 
@@ -205,19 +203,19 @@ const mineSweeper = {
   },
 
   openAllCells() {
-    const tdArray = Array.from(document.getElementsByTagName(`td`))
+    const cellArray = Array.from(document.getElementsByTagName(`td`))
 
-    tdArray.forEach(td => {
-      if (td.dataset.status === `1`) {
+    cellArray.forEach(targetCell => {
+      if (targetCell.dataset.status === `1`) {
         return
       }
 
-      if (td.dataset.mine === `1`) {
-        this.openMineCell(td)
+      if (targetCell.dataset.mine === `1`) {
+        this.openMineCell(targetCell)
         return
       }
 
-      this.openEmptyCell(td)
+      this.openEmptyCell(targetCell)
     })
   },
 
@@ -374,9 +372,9 @@ const mineSweeper = {
   },
 
   addEventToTd() {
-    const tdArray = Array.from(document.getElementsByTagName(`td`))
+    const cellArray = Array.from(document.getElementsByTagName(`td`))
 
-    tdArray.forEach(td => {
+    cellArray.forEach(td => {
       td.addEventListener(
         'click',
         () => {
@@ -389,10 +387,10 @@ const mineSweeper = {
   //ここまで確認完了
 
   judgeGameClear() {
-    const tdArray = Array.from(document.getElementsByTagName(`td`))
+    const cellArray = Array.from(document.getElementsByTagName(`td`))
     gameClear = true
 
-    for (td of tdArray) {
+    for (td of cellArray) {
       if ((td.dataset.status === `0` || td.dataset.status === `2`) && td.dataset.mine === ``) {
         gameClear = false
         break
