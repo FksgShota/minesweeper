@@ -345,6 +345,116 @@ const mineSweeper = {
       flagModeButton.disabled = true
     }
   },
+  mineCellCheck(cellIdArray) {
+    let mineCell = false
+
+    for (cellId of cellIdArray) {
+      let adjacentCell = document.getElementById(cellId)
+      if (adjacentCell.dataset.mine === `1`) {
+        mineCell = true
+        break
+      }
+    }
+    return mineCell
+  },
+
+  openAdjacentEmptyCell(clickCell) {
+    const clickCellId = clickCell.id
+    const clickCellIdSplit = clickCellId.split(`-`)
+    const trNum = Number(clickCellIdSplit[1])
+    const tdNum = Number(clickCellIdSplit[2])
+    const cellIdArray = []
+
+    for (let i = trNum - 1; i <= trNum + 1; i++) {
+      for (let j = tdNum - 1; j <= tdNum + 1; j++) {
+        if (
+          `cell-${i}-${j}` === clickCellId ||
+          document.getElementById(`cell-${i}-${j}`) === null ||
+          document.getElementById(`cell-${i}-${j}`).dataset.status === `1`
+        ) {
+          continue
+        }
+        cellIdArray.push(`cell-${i}-${j}`)
+      }
+    }
+
+    if (cellIdArray.length === 0 || this.mineCellCheck(cellIdArray)) {
+      return
+    }
+    for (cellId of cellIdArray) {
+      let adjacentCell = document.getElementById(cellId)
+      if (adjacentCell === null) {
+        continue
+      }
+      this.openEmptyCell(adjacentCell)
+      this.openAdjacentEmptyCell(adjacentCell)
+    }
+  },
+
+  judgeCellState(td) {
+    if (this.initializingState) {
+      td.dataset.status = `1`
+      td.classList.add(`empty`)
+      this.startGame()
+      this.openAdjacentEmptyCell(td)
+      td.textContent = document.getElementById(td.id).dataset.value
+      return
+    }
+
+    switch (td.dataset.status) {
+      case `0`:
+        if (this.flagSetMode) {
+          this.toggleFlagSet(td)
+          return
+        }
+        if (td.dataset.mine === `1`) {
+          this.openMineCell(td)
+          this.endGame()
+          return
+        }
+        this.openEmptyCell(td)
+        this.openAdjacentEmptyCell(td)
+        break
+      case `1`:
+        break
+      case `2`:
+        this.toggleFlagSet(td)
+        break
+    }
+    if (this.judgeGameClear()) {
+      this.clearGame()
+    }
+  },
+
+  initialize() {
+    this.initializingState = true
+    this.flagSetMode = false
+    this.flagNumber = 0
+    flagCounter.textContent = this.flagNumber
+    this.mineNumber = this.gameLevelConfig[this.gameLevel].mine
+    mineNumber.textContent = this.mineNumber
+    resetButton.disabled = true
+    pauseButton.disabled = true
+    flagModeButton.disabled = true
+    countUpTimer.reset()
+    this.deleteMineSwTarble()
+    this.createMineSwTarble()
+    this.addEventToTd()
+  },
+
+  addEventToTd() {
+    const tdArray = Array.from(document.getElementsByTagName(`td`))
+
+    tdArray.forEach(td => {
+      td.addEventListener(
+        'click',
+        () => {
+          mineSweeper.judgeCellState(td)
+        },
+        false
+      )
+    })
+  },
 }
 
 document.addEventListener(
