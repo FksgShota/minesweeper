@@ -154,7 +154,7 @@ const mineSweeper = {
   },
 
   countMineNumber() {
-    const tdArray = Array.from(document.getElementsByTagName(`td`))
+    const tdArray = tdHtmlCollection
 
     tdArray.forEach(cell => {
       const cellId = cell.id
@@ -221,7 +221,7 @@ const mineSweeper = {
   },
 
   openAllCells() {
-    const tdArray = Array.from(document.getElementsByTagName(`td`))
+    const tdArray = tdHtmlCollection
 
     tdArray.forEach(td => {
       if (td.dataset.status === `1`) {
@@ -235,6 +235,115 @@ const mineSweeper = {
 
       this.openEmptyCell(td)
     })
+  },
+
+  confirmResult() {
+    const clearTime = countUpTimer.gameClearTime
+    const toSec = time => {
+      if (time === `-`) {
+        return 0
+      }
+      const timeSplit = time.split(':')
+      const hour = Number(timeSplit[0])
+      const minute = Number(timeSplit[1])
+      const second = Number(timeSplit[2])
+
+      return hour * 60 * 60 + minute * 60 + second
+    }
+
+    for (let key in this.highScoreRanking[this.gameLevel]) {
+      if (key === `name`) {
+        continue
+      }
+      if (this.highScoreRanking[this.gameLevel][key] === `-`) {
+        this.highScoreRanking[this.gameLevel][key] = clearTime
+        break
+      }
+      if (toSec(this.highScoreRanking[this.gameLevel][key]) > toSec(clearTime)) {
+        this.highScoreRanking[this.gameLevel][key] = clearTime
+        break
+      }
+    }
+
+    const resultMessage = `
+    クリア!
+    ${clearTime}
+    〜ランキング〜
+    Gold [${this.highScoreRanking[this.gameLevel].Gold}]
+    Silver [${this.highScoreRanking[this.gameLevel].Silver}]
+    Bronze [${this.highScoreRanking[this.gameLevel].Bronze}]
+    リトライする?`
+
+    if (confirm(resultMessage)) {
+      this.initialize()
+    } else {
+      pauseButton.disabled = true
+      flagModeButton.disabled = true
+    }
+  },
+
+  judgeGameClear() {
+    const tdArray = tdHtmlCollection
+    gameClear = true
+
+    for (td of tdArray) {
+      if ((td.dataset.status === `0` || td.dataset.status === `2`) && td.dataset.mine === `0`) {
+        gameClear = false
+        break
+      }
+    }
+    return gameClear
+  },
+
+  endGame() {
+    const resultMessage = `
+    ゲームオーバー
+    リトライする？`
+    countUpTimer.pause()
+    this.openAllCells()
+
+    setTimeout(() => {
+      if (confirm(resultMessage)) {
+        this.initialize()
+      } else {
+        pauseButton.disabled = true
+        flagModeButton.disabled = true
+      }
+    }, 1000)
+  },
+
+  startGame() {
+    countUpTimer.start()
+    this.setMinesRandomly()
+    this.countMineNumber()
+    this.initializingState = false
+    resetButton.disabled = false
+    pauseButton.disabled = false
+    flagModeButton.disabled = false
+  },
+
+  clearGame() {
+    countUpTimer.setGameClearTime()
+    this.openAllCells()
+    setTimeout(() => {
+      this.confirmResult()
+    }, 1000)
+
+    const resultMessage = `
+  クリア!
+  ${clearTime}
+  〜ランキング〜
+  Gold [${this.highScoreRanking[this.gameLevel].Gold}]
+  Silver [${this.highScoreRanking[this.gameLevel].Silver}]
+  Bronze [${this.highScoreRanking[this.gameLevel].Bronze}]
+  リトライする?`
+
+    if (confirm(resultMessage)) {
+      this.initialize()
+    } else {
+      pauseButton.disabled = true
+      flagModeButton.disabled = true
+    }
   },
 }
 
