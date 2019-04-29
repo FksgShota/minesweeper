@@ -228,7 +228,7 @@ const mineSweeper = {
     })
   },
 
-  confirmResult() {
+  compareClearTimeRank() {
     const clearTime = countUpTimer.gameClearTime
 
     const toSec = time => {
@@ -244,7 +244,6 @@ const mineSweeper = {
     }
 
     for (let key in this.levelConfig[this.gameLevel].clearTimeRank) {
-      console.log(key)
       if (this.levelConfig[this.gameLevel].clearTimeRank[key] === `-`) {
         this.levelConfig[this.gameLevel].clearTimeRank[key] = clearTime
         break
@@ -255,10 +254,12 @@ const mineSweeper = {
         break
       }
     }
+  },
 
-    const resultMessage = `
+  confirmResult(judge) {
+    const gameClearMessage = `
     クリア!
-    ${clearTime}
+    ${countUpTimer.gameClearTime}
     〜ランキング〜
     難易度[${this.levelConfig[this.gameLevel].name}]
     Gold [${this.levelConfig[this.gameLevel].clearTimeRank.Gold}]
@@ -266,12 +267,22 @@ const mineSweeper = {
     Bronze [${this.levelConfig[this.gameLevel].clearTimeRank.Bronze}]
     リトライする?`
 
-    if (confirm(resultMessage)) {
-      this.initialize()
-    } else {
-      pauseButton.disabled = true
-      flagModeButton.disabled = true
+    const gameOverMessage = `
+    ゲームオーバー
+    リトライする？`
+
+    let result = ``
+
+    switch (judge) {
+      case `gameClear`:
+        result = confirm(gameClearMessage)
+        break
+      case `gameOver`:
+        result = confirm(gameOverMessage)
+        break
     }
+
+    return result
   },
 
   judgeGameClear() {
@@ -291,12 +302,8 @@ const mineSweeper = {
   endGame() {
     countUpTimer.pause()
     this.openAllCells()
-    const resultMessage = `
-    ゲームオーバー
-    リトライする？`
-
     setTimeout(() => {
-      if (confirm(resultMessage)) {
+      if (this.confirmResult(`gameOver`)) {
         this.initialize()
       } else {
         pauseButton.disabled = true
@@ -332,8 +339,14 @@ const mineSweeper = {
   clearGame() {
     countUpTimer.setGameClearTime()
     this.openAllCells()
+    this.compareClearTimeRank()
     setTimeout(() => {
-      this.confirmResult()
+      if (this.confirmResult(`gameClear`)) {
+        this.initialize()
+      } else {
+        pauseButton.disabled = true
+        flagModeButton.disabled = true
+      }
     }, 1000)
   },
 
