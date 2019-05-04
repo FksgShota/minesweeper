@@ -42,7 +42,7 @@ const countUpTimer = {
     clearInterval(this.timerID)
     this.startTime = this.playTime = this.elapsedTime = this.gameClearTime = 0
     pauseButton.value = `start`
-    pauseButton.textContent = `スタート`
+    pauseButton.textContent = `再開`
     timeCounter.textContent = `00:00:00`
   },
 
