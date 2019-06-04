@@ -3,10 +3,9 @@ const pauseButton = document.getElementById(`pauseButton`)
 const levelButton = document.getElementById(`levelButton`)
 const timeCounter = document.getElementById(`timeCounter`)
 const minefield = document.getElementById(`minefield`)
-const mineSwTable = document.getElementById(`mineSwTable`)
 const resetButton = document.getElementById(`resetButton`)
 const flagModeButton = document.getElementById(`flagModeButton`)
-const mineNumber = document.getElementById(`mineNumber`)
+const mineCounter = document.getElementById(`mineCounter`)
 const flagCounter = document.getElementById(`flagCounter`)
 
 const countUpTimer = {
@@ -14,6 +13,7 @@ const countUpTimer = {
   playTime: 0,
   elapsedTime: 0,
   gameClearTime: 0,
+  gameClearTimeToString: 0,
   timerID: ``,
 
   start() {
@@ -40,7 +40,7 @@ const countUpTimer = {
 
   reset() {
     clearInterval(this.timerID)
-    this.startTime = this.playTime = this.elapsedTime = this.gameClearTime = 0
+    this.startTime = this.playTime = this.elapsedTime = this.gameClearTime = this.gameClearTimeToString = 0
     pauseButton.value = `start`
     pauseButton.textContent = `再開`
     timeCounter.textContent = `00:00:00`
@@ -67,22 +67,61 @@ const countUpTimer = {
 
   setGameClearTime() {
     this.pause()
-    this.gameClearTime = this.convertFormat(this.elapsedTime)
+    this.gameClearTime = this.elapsedTime
+    this.gameClearTimeToString = this.convertFormat(this.elapsedTime)
   },
 }
 
 const mineSweeper = {
   levelConfig: [
-    { name: `初級`, cell: 9, mine: 10, clearTimeRank: { Gold: `-`, Silver: `-`, Bronze: `-` } },
-    { name: `中級`, cell: 16, mine: 40, clearTimeRank: { Gold: `-`, Silver: `-`, Bronze: `-` } },
-    { name: `上級`, cell: 30, mine: 120, clearTimeRank: { Gold: `-`, Silver: `-`, Bronze: `-` } },
-    { name: `マニア`, cell: 68, mine: 777, clearTimeRank: { Gold: `-`, Silver: `-`, Bronze: `-` } },
+    {
+      name: `初級`,
+      cell: 9,
+      mine: 10,
+      clearTimeRank: {
+        Gold: { time: `00:00:10`, toMilliSec: 10000 },
+        Silver: { time: `00:00:30`, toMilliSec: 30000 },
+        Bronze: { time: `00:00:50`, toMilliSec: 50000 },
+      },
+    },
+    {
+      name: `中級`,
+      cell: 16,
+      mine: 40,
+      clearTimeRank: {
+        Gold: { time: `00:00:20`, toMilliSec: 20000 },
+        Silver: { time: `00:01:00`, toMilliSec: 60000 },
+        Bronze: { time: `00:01:40`, toMilliSec: 100000 },
+      },
+    },
+    {
+      name: `上級`,
+      cell: 30,
+      mine: 120,
+      clearTimeRank: {
+        Gold: { time: `00:01:00`, toMilliSec: 60000 },
+        Silver: { time: `00:02:00`, toMilliSec: 120000 },
+        Bronze: { time: `00:03:00`, toMilliSec: 18000 },
+      },
+    },
+    {
+      name: `マニア`,
+      cell: 68,
+      mine: 777,
+      clearTimeRank: {
+        Gold: { time: `01:00:00`, toMilliSec: 3600000 },
+        Silver: { time: `02:00:00`, toMilliSec: 7200000 },
+        Bronze: { time: `03:00:00`, toMilliSec: 10800000 },
+      },
+    },
   ],
+  cellStatus: { default: `0`, opened: `1`, flagOn: `2` },
+  mineStatus: { mineOff: `0`, mineOn: `1` },
   gameLevel: 0,
-  initialization: true,
+  isInitialize: true,
   flagSetMode: false,
-  flagNumber: 0,
-  mineNumber: 10,
+  flagCount: 0,
+  mineCount: 10,
 
   toggleFlagSetMode() {
     if (this.flagSetMode) {
@@ -95,20 +134,20 @@ const mineSweeper = {
   },
 
   toggleFlagSet(clickCell) {
-    switch (clickCell.dataset.status) {
-      case `0`:
+    switch (clickCell.dataset.state) {
+      case this.cellStatus.default:
         clickCell.classList.add(`flag`)
         clickCell.textContent = `▲`
-        clickCell.dataset.status = `2`
-        this.flagNumber++
-        flagCounter.textContent = this.flagNumber
+        clickCell.dataset.state = this.cellStatus.flagOn
+        this.flagCount++
+        flagCounter.textContent = this.flagCount
         break
-      case `2`:
+      case this.cellStatus.flagOn:
         clickCell.classList.remove(`flag`)
         clickCell.textContent = ``
-        clickCell.dataset.status = `0`
-        this.flagNumber--
-        flagCounter.textContent = this.flagNumber
+        clickCell.dataset.state = this.cellStatus.default
+        this.flagCount--
+        flagCounter.textContent = this.flagCount
         break
     }
   },
@@ -129,18 +168,17 @@ const mineSweeper = {
 
     for (let i = cellArray.length - 1; i >= 0; i--) {
       const g = Math.floor(Math.random() * (i + 1))
-      const tmp = cellArray[i]
-      cellArray[i] = cellArray[g]
-      cellArray[g] = tmp
+
+      ;[cellArray[i], cellArray[g]] = [cellArray[g], cellArray[i]]
     }
 
     for (let i = 0; i < this.levelConfig[this.gameLevel].mine; i++) {
-      if (document.getElementById(cellArray[i].id).dataset.status === `1`) {
+      if (document.getElementById(cellArray[i].id).dataset.state === this.cellStatus.opened) {
         cellArray.splice(i, 1)
         i--
         continue
       }
-      document.getElementById(cellArray[i].id).dataset.mine = `1`
+      document.getElementById(cellArray[i].id).dataset.mine = this.mineStatus.mineOn
     }
   },
 
@@ -154,14 +192,14 @@ const mineSweeper = {
       const targetCellTd = Number(cellIdSplit[2])
       let mineNum = ``
 
-      if (targetCell.dataset.mine === `1`) {
+      if (targetCell.dataset.mine === this.mineStatus.mineOn) {
         return
       }
 
       for (let trNum = targetCellTr - 1; trNum <= targetCellTr + 1; trNum++) {
         for (let tdNum = targetCellTd - 1; tdNum <= targetCellTd + 1; tdNum++) {
           let adjacentCell = document.getElementById(`cell-${trNum}-${tdNum}`)
-          if ((trNum === targetCellTr && tdNum === targetCellTd) || adjacentCell === null) {
+          if ((trNum === targetCellTr && tdNum === targetCellTd) || !adjacentCell) {
             continue
           }
           let adjacentCellMine = adjacentCell.dataset.mine
@@ -183,8 +221,8 @@ const mineSweeper = {
       for (let j = 0; j < this.levelConfig[this.gameLevel].cell; j++) {
         const td = document.createElement(`td`)
         td.id = `cell-${i}-${j}`
-        td.dataset.status = `0`
-        td.dataset.mine = `0`
+        td.dataset.state = this.cellStatus.default
+        td.dataset.mine = this.mineStatus.mineOff
         td.dataset.value = ``
         tr.appendChild(td)
       }
@@ -200,13 +238,13 @@ const mineSweeper = {
   },
 
   openMineCell(clickCell) {
-    clickCell.dataset.status = `1`
+    clickCell.dataset.state = this.cellStatus.opened
     clickCell.classList.add(`mine`)
     clickCell.textContent = '●'
   },
 
   openEmptyCell(clickCell) {
-    clickCell.dataset.status = `1`
+    clickCell.dataset.state = this.cellStatus.opened
     clickCell.classList.add(`empty`)
     clickCell.textContent = document.getElementById(clickCell.id).dataset.value
   },
@@ -215,11 +253,11 @@ const mineSweeper = {
     const cellArray = Array.from(document.getElementsByTagName(`td`))
 
     cellArray.forEach(targetCell => {
-      if (targetCell.dataset.status === `1`) {
+      if (targetCell.dataset.state === this.cellStatus.opened) {
         return
       }
 
-      if (targetCell.dataset.mine === `1`) {
+      if (targetCell.dataset.mine === this.mineStatus.mineOn) {
         this.openMineCell(targetCell)
         return
       }
@@ -229,81 +267,41 @@ const mineSweeper = {
   },
 
   compareClearTimeRank() {
-    const clearTime = countUpTimer.gameClearTime
-
-    const toSec = time => {
-      if (time === `-`) {
-        return 0
-      }
-      const timeSplit = time.split(':')
-      const hour = Number(timeSplit[0])
-      const minute = Number(timeSplit[1])
-      const second = Number(timeSplit[2])
-
-      return hour * 60 * 60 + minute * 60 + second
-    }
-
     for (let key in this.levelConfig[this.gameLevel].clearTimeRank) {
-      if (this.levelConfig[this.gameLevel].clearTimeRank[key] === `-`) {
-        this.levelConfig[this.gameLevel].clearTimeRank[key] = clearTime
-        break
-      }
-
-      if (toSec(this.levelConfig[this.gameLevel].clearTimeRank[key]) > toSec(clearTime)) {
-        this.levelConfig[this.gameLevel].clearTimeRank[key] = clearTime
+      if (this.levelConfig[this.gameLevel].clearTimeRank[key].toMilliSec > countUpTimer.gameClearTime) {
+        this.levelConfig[this.gameLevel].clearTimeRank[key].time = `${
+          countUpTimer.gameClearTimeToString
+        }   あなたの記録`
         break
       }
     }
-  },
-
-  confirmResult(judge) {
-    const gameClearMessage = `
-    クリア!
-    ${countUpTimer.gameClearTime}
-    〜ランキング〜
-    難易度[${this.levelConfig[this.gameLevel].name}]
-    Gold [${this.levelConfig[this.gameLevel].clearTimeRank.Gold}]
-    Silver [${this.levelConfig[this.gameLevel].clearTimeRank.Silver}]
-    Bronze [${this.levelConfig[this.gameLevel].clearTimeRank.Bronze}]
-    リトライする?`
-
-    const gameOverMessage = `
-    ゲームオーバー
-    リトライする？`
-
-    let result = ``
-
-    switch (judge) {
-      case `gameClear`:
-        result = confirm(gameClearMessage)
-        break
-      case `gameOver`:
-        result = confirm(gameOverMessage)
-        break
-    }
-
-    return result
   },
 
   judgeGameClear() {
     const cellArray = Array.from(document.getElementsByTagName(`td`))
 
-    let gameClear = true
-
     for (targetCell of cellArray) {
-      if ((targetCell.dataset.status === `0` || targetCell.dataset.status === `2`) && targetCell.dataset.mine === `0`) {
-        gameClear = false
-        break
+      if (
+        (targetCell.dataset.state === this.cellStatus.default || targetCell.dataset.state === this.cellStatus.flagOn) &&
+        targetCell.dataset.mine === this.mineStatus.mineOff
+      ) {
+        return false
       }
     }
-    return gameClear
+    return true
   },
 
   endGame() {
     countUpTimer.pause()
     this.openAllCells()
+
+    const gameOverMessage = `
+    ゲームオーバー
+    リトライする？`
+
+    // openAllCellsのレンダリングがconfirmより遅れることがあるため、対策として遅延処理を追加
     setTimeout(() => {
-      if (this.confirmResult(`gameOver`)) {
+      if (confirm(gameOverMessage)) {
         this.initialize()
       } else {
         pauseButton.disabled = true
@@ -316,7 +314,7 @@ const mineSweeper = {
     countUpTimer.start()
     this.setMinesRandomlyToCells()
     this.countMineNumber()
-    this.initialization = false
+    this.isInitialize = false
     resetButton.disabled = false
     pauseButton.disabled = false
     flagModeButton.disabled = false
@@ -324,24 +322,33 @@ const mineSweeper = {
   },
 
   isMineCell(cellIdArray) {
-    let mineCell = false
-
     for (cellId of cellIdArray) {
       let adjacentCell = document.getElementById(cellId)
-      if (adjacentCell.dataset.mine === `1`) {
-        mineCell = true
-        break
+      if (adjacentCell.dataset.mine === this.mineStatus.mineOn) {
+        return true
       }
     }
-    return mineCell
+    return false
   },
 
   clearGame() {
     countUpTimer.setGameClearTime()
     this.openAllCells()
     this.compareClearTimeRank()
+
+    const gameClearMessage = `
+    クリア!
+    ${countUpTimer.gameClearTimeToString}
+    〜ランキング〜
+    難易度[${this.levelConfig[this.gameLevel].name}]
+    Gold [${this.levelConfig[this.gameLevel].clearTimeRank.Gold.time}]
+    Silver [${this.levelConfig[this.gameLevel].clearTimeRank.Silver.time}]
+    Bronze [${this.levelConfig[this.gameLevel].clearTimeRank.Bronze.time}]
+    リトライする?`
+
+    // openAllCellsのレンダリングがconfirmより遅れることがあるため、対策として遅延処理を追加
     setTimeout(() => {
-      if (this.confirmResult(`gameClear`)) {
+      if (confirm(gameClearMessage)) {
         this.initialize()
       } else {
         pauseButton.disabled = true
@@ -361,8 +368,8 @@ const mineSweeper = {
       for (let td = clickTdNum - 1; td <= clickTdNum + 1; td++) {
         if (
           `cell-${tr}-${td}` === clickCellId ||
-          document.getElementById(`cell-${tr}-${td}`) === null ||
-          document.getElementById(`cell-${tr}-${td}`).dataset.status === `1`
+          !document.getElementById(`cell-${tr}-${td}`) ||
+          document.getElementById(`cell-${tr}-${td}`).dataset.state === this.cellStatus.opened
         ) {
           continue
         }
@@ -375,7 +382,7 @@ const mineSweeper = {
     }
     for (id of adjacentCellIdArray) {
       let adjacentCell = document.getElementById(id)
-      if (adjacentCell === null) {
+      if (!adjacentCell) {
         continue
       }
       this.openEmptyCell(adjacentCell)
@@ -384,8 +391,8 @@ const mineSweeper = {
   },
 
   judgeCellState(clickCell) {
-    if (this.initialization) {
-      clickCell.dataset.status = `1`
+    if (this.isInitialize) {
+      clickCell.dataset.state = this.cellStatus.opened
       clickCell.classList.add(`empty`)
       this.startGame()
       this.openAdjacentEmptyCell(clickCell)
@@ -393,13 +400,13 @@ const mineSweeper = {
       return
     }
 
-    switch (clickCell.dataset.status) {
-      case `0`:
+    switch (clickCell.dataset.state) {
+      case this.cellStatus.default:
         if (this.flagSetMode) {
           this.toggleFlagSet(clickCell)
           return
         }
-        if (clickCell.dataset.mine === `1`) {
+        if (clickCell.dataset.mine === this.mineStatus.mineOn) {
           this.openMineCell(clickCell)
           this.endGame()
           return
@@ -407,9 +414,9 @@ const mineSweeper = {
         this.openEmptyCell(clickCell)
         this.openAdjacentEmptyCell(clickCell)
         break
-      case `1`:
+      case this.cellStatus.opened:
         break
-      case `2`:
+      case this.cellStatus.flagOn:
         if (this.flagSetMode) {
           this.toggleFlagSet(clickCell)
         }
@@ -422,17 +429,17 @@ const mineSweeper = {
   },
 
   initialize() {
-    this.initialization = true
+    this.isInitialize = true
     resetButton.disabled = true
     pauseButton.disabled = true
     flagModeButton.disabled = true
     levelButton.disabled = false
     this.flagSetMode = false
-    this.flagNumber = 0
+    this.flagCount = 0
     flagModeButton.classList.remove(`activate`)
-    flagCounter.textContent = this.flagNumber
-    this.mineNumber = this.levelConfig[this.gameLevel].mine
-    mineNumber.textContent = this.mineNumber
+    flagCounter.textContent = this.flagCount
+    this.mineCount = this.levelConfig[this.gameLevel].mine
+    mineCounter.textContent = this.mineCount
     countUpTimer.reset()
     this.deleteMineSwTarble()
     this.createMineSwTarble()
