@@ -53,6 +53,7 @@ table td {
   height: 2.7rem;
   min-width: 2.7rem;
   vertical-align: middle;
+  cursor: default;
 }
 
 td.empty {
